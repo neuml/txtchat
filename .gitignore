@@ -1,0 +1,9 @@
+build/
+dist/
+docker/**/*.yml
+htmlcov/
+*egg-info/
+__pycache__/
+.coverage
+.coverage.*
+*.pyc
