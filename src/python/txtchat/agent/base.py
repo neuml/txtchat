@@ -47,7 +47,7 @@ class Agent:
 
         Args:
             text: input text
-        
+
         Returns:
             message response
         """

@@ -67,9 +67,9 @@ class Wikisearch(Pipeline):
             text: input query text
             low: lower percentile bound
             high: upper percentile bound
-        
+
         Returns:
-            response 
+            response
         """
 
         # Build similar clause
@@ -88,11 +88,7 @@ class Wikisearch(Pipeline):
                 logger.info("%s\n", x)
 
             # Run the LLM prompt
-            answer = self.application.extract([{
-                "name": "query",
-                "query": text,
-                "question": self.prompt(text)
-            }], texts)[0]["answer"]
+            answer = self.application.extract([{"name": "query", "query": text, "question": self.prompt(text)}], texts)[0]["answer"]
 
             # Find the best matching reference from the results
             if answer != Wikisearch.NOANSWER:
@@ -109,7 +105,7 @@ class Wikisearch(Pipeline):
 
         Args:
             text: input text
-        
+
         Returns:
             text for similar clause
         """

@@ -29,7 +29,7 @@ class Reader:
 
         Args:
             outputs: outputs queue
-            pageviews: path to page views database 
+            pageviews: path to page views database
         """
 
         wiki = load_dataset("olm/olm-wikipedia-20221220", split="train")
@@ -61,8 +61,13 @@ class Reader:
             # - title does not contain 'disambiguation' and does not start with skip title prefixes
             # - abstract is not empty and does not start with skip abstract prefixes and does not end with ':'
             # - lede does not contain 'can refer to' or 'may refer to'
-            if "disambiguation" not in title and not any(title.startswith(p) for p in skiptitles) and \
-            abstract.strip() and not any(abstract.startswith(p) for p in skipabstracts) and not abstract.strip().endswith(":"):
+            if (
+                "disambiguation" not in title
+                and not any(title.startswith(p) for p in skiptitles)
+                and abstract.strip()
+                and not any(abstract.startswith(p) for p in skipabstracts)
+                and not abstract.strip().endswith(":")
+            ):
                 # Split into sentences
                 lede = sent_tokenize(abstract)[0]
 
@@ -86,13 +91,13 @@ class Reader:
     def rankings(self, path):
         """
         Reads a page views database at path and runs a query to rank each article by page
-        view percentile. 
+        view percentile.
 
         Args:
             path: path to database file
 
         Returns:
-            dictionary of title to percentile rank for each article 
+            dictionary of title to percentile rank for each article
         """
 
         # Read page views database
@@ -143,6 +148,7 @@ class Reader:
 
         return batch
 
+
 class Index:
     """
     Builds a Wikipedia embeddings index.
@@ -151,7 +157,7 @@ class Index:
     def __call__(self):
         """
         Main process for streaming content and building an embeddings index. Another process is spawned that
-        streams Wikipedia articles to load into the embeddings index. 
+        streams Wikipedia articles to load into the embeddings index.
         """
 
         # Encoding parameters
@@ -165,21 +171,17 @@ class Index:
         total = queue.get()
 
         # Embedding index parameters
-        embeddings = Embeddings({
-            "format": "json",
-            "path": "intfloat/e5-base",
-            "instructions": {
-                "query": "query: ",
-                "data": "passage: "
-            },
-            "batch": BATCH,
-            "encodebatch": ENCODEBATCH,
-            "faiss": {
-                "quantize": True,
-                "sample": 0.05
-            },
-            "content": True
-        })
+        embeddings = Embeddings(
+            {
+                "format": "json",
+                "path": "intfloat/e5-base",
+                "instructions": {"query": "query: ", "data": "passage: "},
+                "batch": BATCH,
+                "encodebatch": ENCODEBATCH,
+                "faiss": {"quantize": True, "sample": 0.05},
+                "content": True,
+            }
+        )
 
         # Index stream
         embeddings.index(tqdm(self.stream(queue), total=total))
@@ -202,6 +204,7 @@ class Index:
         while result != COMPLETE:
             yield from result
             result = queue.get()
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -48,7 +48,7 @@ class RocketChat(Agent):
 
     async def run(self):
         """
-        Connects to RocketChat and subscribes to all direct message channels with the agent's username. 
+        Connects to RocketChat and subscribes to all direct message channels with the agent's username.
         """
 
         # Create chat instance and connect
