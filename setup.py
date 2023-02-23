@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="txtchat",
-    version="0.0.1",
+    version="0.1.0",
     author="NeuML",
     description="Conversational search and workflows for all",
     long_description=DESCRIPTION,
@@ -20,6 +20,17 @@ setup(
     license="Apache 2.0: http://www.apache.org/licenses/LICENSE-2.0",
     packages=find_packages(where="src/python"),
     package_dir={"": "src/python"},
+    keywords="search embedding machine-learning nlp",
+    python_requires=">=3.7",
+    install_requires=[
+        "datasets>=2.8.0",
+        "nltk>=3.5",
+        "pandas>=1.3.5",
+        "pyyaml>=5.3",
+        "rocketchat_async>=1.0.1",
+        "tqdm>=4.48.0",
+        "txtai>=5.4.0",
+    ],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",

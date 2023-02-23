@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-    <p>Conversational search and workflows for all </p>
+    <p>Conversational search and workflows for all</p>
 </h3>
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,19 +32,31 @@ See [this link](https://github.com/neuml/txtai#installation) to help resolve env
 
 ## Messaging platforms
 
-txtchat is designed to and will support a number of messaging platforms. Currently, [Rocket.Chat](https://github.com/RocketChat/Rocket.Chat) is the only supported platform given it's ability to be installed in a local environment along with being MIT-licensed. The easiest way to start a local Rocket.Chat instance is with Docker Compose. See [these instructions](https://docs.rocket.chat/deploy/prepare-for-your-deployment/rapid-deployment-methods/docker-and-docker-compose) for more.
+txtchat is designed to and will support a number of messaging platforms. Currently, [Rocket.Chat](https://github.com/RocketChat/Rocket.Chat) is the only supported platform given it's ability to be installed in a local environment along with being MIT-licensed. The easiest way to start a local Rocket.Chat instance is with Docker Compose. See these [instructions](https://docs.rocket.chat/deploy/prepare-for-your-deployment/rapid-deployment-methods/docker-and-docker-compose) for more.
 
 Extending txtchat to additional platforms only needs a new Agent subclass for that platform.
 
 ## Personas
 
-The txtchat-persona repository has a list of standard persona workflows. A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic.
+The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows. A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic.
 
-- Wikitalk: Conversational search with Wikipedia
-- Summary: Reads input URLs and summarizes the text
-- Mr. French: Translates input text into French
+- [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Conversational search with Wikipedia
+- [Summary](https://hf.co/neuml/txtchat-personas/blob/main/summary.yml): Reads input URLs and summarizes the text
+- [Mr. French](https://hf.co/neuml/txtchat-personas/blob/main/mrfrench.yml): Translates input text into French
 
-Want to add a new persona? Simply submit a PR with the repository on the Hugging Face Hub. 
+The following shows how to start a txtchat persona.
+
+```
+# Set to server URL, this is default when running local
+export URL=ws://localhost:3000/websocket
+export USERNAME=<Rocket Chat User>
+export PASSWORD=<Rocket Chat User Password>
+
+# YAML is loaded from Hugging Face Hub, can also reference local path
+python -m txtchat.agent wikitalk.yml
+```
+
+Want to add a new persona? Simply submit a PR on the Hugging Face Hub repository.
 
 ## Wikitalk
 
@@ -73,6 +85,7 @@ Arts and culture questions.
 ### Science
 
 Let's quiz Wikitalk on science.
+
 [![Science](https://img.youtube.com/vi/-rsYDsZc9Wo/maxresdefault.jpg)](https://youtube.com/watch?v=-rsYDsZc9Wo)
 
 ## Summary
