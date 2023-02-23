@@ -56,24 +56,34 @@ Every answer shows an associated reference with where the data came from. Wikita
 
 Conversation with Wikitalk about history.
 
-[![History](https://img.youtube.com/vi/3NH41Qf0ClU/maxresdefault.jpg)](https://youtube.com/watch?v=3NH41Qf0ClU)
+[![History](https://img.youtube.com/vi/ROyess8dLoA/maxresdefault.jpg)](https://youtube.com/watch?v=ROyess8dLoA)
 
 ### Sports
 
 Talk about sports.
 
-### Science
-
-Let's quiz Wikitalk on science.
+[![Sports](https://img.youtube.com/vi/LXRB-iruKSc/maxresdefault.jpg)](https://youtube.com/watch?v=LXRB-iruKSc)
 
 ### Culture
 
 Arts and culture questions.
 
+[![Culture](https://img.youtube.com/vi/OkObkNhJIgk/maxresdefault.jpg)](https://youtube.com/watch?v=OkObkNhJIgk)
+
+### Science
+
+Let's quiz Wikitalk on science.
+
+[![Science](https://img.youtube.com/vi/rsYDsZc9Wo/maxresdefault.jpg)](https://youtube.com/watch?v=rsYDsZc9Wo)
+
 ## Summary
 
 Not all workflows need a LLM. There are plenty of great small models available to perform a specific task. The Summary persona simply reads the input URL and summarizes the text.
 
+[![Summary](https://img.youtube.com/vi/PBJm9aDqkn0/maxresdefault.jpg)](https://youtube.com/watch?v=PBJm9aDqkn0)
+
 ## Mr. French
 
 Like the summary persona, Mr. French is a simple persona that translates input text to French.
+
+[![French](https://img.youtube.com/vi/4x8pOIm4rbo/maxresdefault.jpg)](https://youtube.com/watch?v=4x8pOIm4rbo)
