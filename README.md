@@ -56,7 +56,7 @@ Every answer shows an associated reference with where the data came from. Wikita
 
 Conversation with Wikitalk about history.
 
-[![History](https://img.youtube.com/vi/3NH41Qf0ClU/default.jpg)](https://youtube.com/watch?v=nTQUwghvy5Q)
+https://www.youtube.com/watch?v=3NH41Qf0ClU
 
 ### Sports
 
