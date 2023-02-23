@@ -73,8 +73,7 @@ Arts and culture questions.
 ### Science
 
 Let's quiz Wikitalk on science.
-
-[![Science](https://img.youtube.com/vi/rsYDsZc9Wo/maxresdefault.jpg)](https://youtube.com/watch?v=rsYDsZc9Wo)
+[![Science](https://img.youtube.com/vi/-rsYDsZc9Wo/maxresdefault.jpg)](https://youtube.com/watch?v=-rsYDsZc9Wo)
 
 ## Summary
 
