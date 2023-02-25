@@ -36,15 +36,18 @@ txtchat is designed to and will support a number of messaging platforms. Current
 
 Extending txtchat to additional platforms only needs a new Agent subclass for that platform.
 
-## Personas
+## Architecture
 
-The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows. A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic.
+![architecture](https://raw.githubusercontent.com/neuml/txtchat/master/images/architecture.png#gh-light-mode-only)
+![architecture](https://raw.githubusercontent.com/neuml/txtchat/master/images/architecture-dark.png#gh-dark-mode-only)
+
+A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic. The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows.
 
 - [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Conversational search with Wikipedia
 - [Summary](https://hf.co/neuml/txtchat-personas/blob/main/summary.yml): Reads input URLs and summarizes the text
 - [Mr. French](https://hf.co/neuml/txtchat-personas/blob/main/mrfrench.yml): Translates input text into French
 
-The following shows how to start a txtchat persona.
+The following command shows how to start a txtchat persona.
 
 ```
 # Set to server URL, this is default when running local
@@ -56,11 +59,11 @@ export PASSWORD=<Rocket Chat User Password>
 python -m txtchat.agent wikitalk.yml
 ```
 
-Want to add a new persona? Simply submit a PR on the Hugging Face Hub repository.
+Want to add a new persona? Simply create a txtai workflow and save it to a YAML file.
 
-## Wikitalk
+## Examples
 
-The following is a [list of YouTube videos](https://www.youtube.com/watch?v=ROyess8dLoA&list=PLaqn_lxC5d0C_HPe53GPk7jBH3xhBcgu-) that show how txtchat works. These videos run a series of queries with the Wikitalk persona. Wikitalk is a combination of a Wikipedia embeddings index and a LLM prompt to answer questions.
+The following is a [list of YouTube videos](https://www.youtube.com/watch?v=ROyess8dLoA&list=PLaqn_lxC5d0C_HPe53GPk7jBH3xhBcgu-) that shows how txtchat works. These videos run a series of queries with the Wikitalk persona. Wikitalk is a combination of a Wikipedia embeddings index and a LLM prompt to answer questions.
 
 Every answer shows an associated reference with where the data came from. Wikitalk will say "I don't have data on that" when it doesn't have an answer.
 
@@ -88,14 +91,86 @@ Let's quiz Wikitalk on science.
 
 [![Science](https://img.youtube.com/vi/-rsYDsZc9Wo/maxresdefault.jpg)](https://youtube.com/watch?v=-rsYDsZc9Wo)
 
-## Summary
+### Summary
 
 Not all workflows need a LLM. There are plenty of great small models available to perform a specific task. The Summary persona simply reads the input URL and summarizes the text.
 
 [![Summary](https://img.youtube.com/vi/PBJm9aDqkn0/maxresdefault.jpg)](https://youtube.com/watch?v=PBJm9aDqkn0)
 
-## Mr. French
+### Mr. French
 
 Like the summary persona, Mr. French is a simple persona that translates input text to French.
 
 [![French](https://img.youtube.com/vi/4x8pOIm4rbo/maxresdefault.jpg)](https://youtube.com/watch?v=4x8pOIm4rbo)
+
+## Connect your own data
+
+Want to connect txtchat to your own data? All that you need to do is create a txtai workflow. Let's run through an example of building a Hacker News indexing workflow and a txtchat persona.
+
+First, we'll define the indexing workflow and build the index. This is done with a workflow for convenience. Alternatively it could be a Python program that builds an embeddings index from your dataset. There are over [40 example notebooks](https://github.com/neuml/txtai#examples) covering a wide range of ways to get data into txtai. There are also example workflows that can be downloaded from in this [Hugging Face Space](https://huggingface.co/spaces/NeuML/txtai).
+
+```yaml
+path: /tmp/hn
+embeddings:
+  path: sentence-transformers/all-MiniLM-L6-v2
+  content: true
+tabular:
+  idcolumn: url
+  textcolumns:
+  - title
+workflow:
+  index:
+    tasks:
+    - batch: false
+      extract:
+      - hits
+      method: get
+      params:
+        tags: null
+      task: service
+      url: https://hn.algolia.com/api/v1/search?hitsPerPage=50
+    - action: tabular
+    - action: index
+writable: true
+```
+
+This workflow parses the Hacker News front page feed and builds an embeddings index at the path `/tmp/hn`. 
+
+Run the workflow with the following.
+
+```python
+from txtai.app import Application
+
+app = Application("index.yml")
+list(app.workflow("index", ["front_page"]))
+```
+
+Now we'll define the chat workflow and run it as an agent.
+
+```yaml
+path: /tmp/hn
+writable: false
+
+extractor:
+  path: google/flan-t5-xl
+
+workflow:
+  search:
+    tasks:
+      - txtchat.prompt.Question
+      - extractor
+```
+
+```
+python -m txtchat.agent query.yml
+```
+
+Let's talk to Hacker News!
+
+![hn](https://raw.githubusercontent.com/neuml/txtchat/master/images/custom.png)
+
+As you can see, Hacker News is a highly opinionated data source!
+
+## Further Reading
+
+- [Introducing txtchat, next-generation conversational search and workflows for all](https://medium.com/neuml/introducing-txtchat-next-generation-conversational-search-and-workflows-for-all-97557009fb53)
