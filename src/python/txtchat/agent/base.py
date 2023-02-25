@@ -52,6 +52,8 @@ class Agent:
             message response
         """
 
+        print(self.action, text)
+
         # pylint: disable=W0703
         try:
             # Execute workflow for input message text

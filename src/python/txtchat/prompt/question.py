@@ -2,24 +2,19 @@
 Question module
 """
 
+from .base import Prompt
 
-class Question:
+
+class Question(Prompt):
     """
     Creates a question prompt.
     """
 
-    def __call__(self, question):
-        """
-        Create a question prompt.
+    def generate(self, text):
+        # Generates a prompt
+        prompt = "Answer the following question using only the context below. Give a detailed answer. "
+        prompt += "Say 'I don't have data on that' when the question can't be answered.\n"
+        prompt += f"Question: {text}\n"
+        prompt += "Context: "
 
-        Args:
-            question: question to add to prompt
-
-        Returns:
-            question prompt
-        """
-
-        # pylint: disable=C0301
-        return f"""Answer the following question using only the context below. Give a detailed answer. Say 'I don't have data on that' when the question can't be answered.
-Question: {question} 
-Context: """
+        return prompt

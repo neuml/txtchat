@@ -88,7 +88,7 @@ class Wikisearch(Pipeline):
                 logger.info("%s\n", x)
 
             # Run the LLM prompt
-            answer = self.application.extract([{"name": "query", "query": text, "question": self.prompt(text)}], texts)[0]["answer"]
+            answer = self.application.extract(self.prompt([text]), texts)[0]["answer"]
 
             # Find the best matching reference from the results
             if answer != Wikisearch.NOANSWER:
