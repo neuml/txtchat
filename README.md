@@ -153,12 +153,13 @@ writable: false
 
 extractor:
   path: google/flan-t5-xl
+  output: flatten
 
 workflow:
   search:
     tasks:
-      - txtchat.prompt.Question
-      - extractor
+      - task: txtchat.task.Question
+        action: extractor
 ```
 
 ```
@@ -170,6 +171,26 @@ Let's talk to Hacker News!
 ![hn](https://raw.githubusercontent.com/neuml/txtchat/master/images/custom.png)
 
 As you can see, Hacker News is a highly opinionated data source!
+
+Getting answers is nice but being able to have answers with where they came from is nicer. Let's build a workflow that adds a reference link to each answer.
+
+```yaml
+path: /tmp/hn
+writable: false
+
+extractor:
+  path: google/flan-t5-xl
+  output: reference
+
+workflow:
+  search:
+    tasks:
+      - task: txtchat.task.Question
+        action: extractor
+      - task: txtchat.task.Answer
+```
+
+![hn-reference](https://raw.githubusercontent.com/neuml/txtchat/master/images/custom-reference.png)
 
 ## Further Reading
 

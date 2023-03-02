@@ -6,8 +6,9 @@ import logging
 import urllib.parse
 
 from txtai.pipeline import Pipeline
+from txtai.workflow import Workflow
 
-from ..prompt import Question
+from ..task import Question, Answer
 
 # Logging configuration
 logger = logging.getLogger(__name__)
@@ -19,8 +20,6 @@ class Wikisearch(Pipeline):
     as context to a large language model (LLM) prompt. Results from the prompt inference are then returned.
     """
 
-    NOANSWER = "I don't have data on that"
-
     def __init__(self, application):
         """
         Creates a new Wikisearch instance.
@@ -29,11 +28,11 @@ class Wikisearch(Pipeline):
             application: application instance
         """
 
-        # Application instance
-        self.application = application
-
-        # Initialize prompt
-        self.prompt = Question()
+        # Create query workflow
+        self.workflow = Workflow([
+            Question(action=application.pipelines["extractor"]),
+            WikiAnswer()
+        ])
 
     def __call__(self, texts):
         """
@@ -52,7 +51,7 @@ class Wikisearch(Pipeline):
             response = self.query(text, 0.99, 1.0)
 
             # Do full query if no answer
-            if response == Wikisearch.NOANSWER:
+            if response.startswith(Answer.NOANSWER):
                 response = self.query(text, 0.00, 0.99)
 
             responses.append(response)
@@ -75,29 +74,12 @@ class Wikisearch(Pipeline):
         # Build similar clause
         clause = self.clause(text)
 
+        # Build SQL query
         query = f"SELECT id, text, score, percentile FROM txtai WHERE similar({clause}) AND percentile >= {low} AND percentile <= {high} limit 3"
         logger.info(query)
 
-        # Run embeddings search
-        results, answer = self.application.search(query), Wikisearch.NOANSWER
-        if results:
-            # Prompt context
-            texts = [x["text"] for x in results]
-
-            for x in results:
-                logger.info("%s\n", x)
-
-            # Run the LLM prompt
-            answer = self.application.extract(self.prompt([text]), texts)[0]["answer"]
-
-            # Find the best matching reference from the results
-            if answer != Wikisearch.NOANSWER:
-                index = self.application.similarity(f"{text} {answer}", texts)[0]["id"]
-                uid = results[index]["id"]
-                path = urllib.parse.quote(uid.replace(" ", "_"))
-                answer += f"\n\nReference: https://en.wikipedia.org/wiki/{path}"
-
-        return answer
+        # Run query workflow
+        return list(self.workflow([{"query": query, "question": text}]))[0]
 
     def clause(self, text):
         """
@@ -115,3 +97,22 @@ class Wikisearch(Pipeline):
 
         # Wrap clause in single quotes
         return f"'{text}'"
+
+
+class WikiAnswer(Answer):
+    """
+    Task that fully resolves Wikipedia URLs.
+    """
+
+    def prepare(self, element):
+        if not element["answer"].startswith(Answer.NOANSWER):
+            reference = element["reference"]
+
+            # Resolve full reference URL path
+            path = urllib.parse.quote(reference.replace(" ", "_"))
+            element["reference"] = f"https://en.wikipedia.org/wiki/{path}"
+
+            # Call parent method
+            return super().prepare(element)
+
+        return element["answer"]

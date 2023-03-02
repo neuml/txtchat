@@ -2,6 +2,7 @@
 Index module
 """
 
+import logging
 import re
 import sqlite3
 import sys
@@ -210,6 +211,10 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: index <output dir> <path to page views database>")
         sys.exit()
+
+    # Configure logging
+    logging.basicConfig(format="%(asctime)s [%(levelname)s] %(funcName)s: %(message)s")
+    logging.getLogger().setLevel(logging.INFO)
 
     # Build index
     index = Index()

@@ -1,7 +1,7 @@
 """
-Prompt imports
+Task imports
 """
 
 
-from .base import Prompt
+from .answer import Answer
 from .question import Question

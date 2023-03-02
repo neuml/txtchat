@@ -191,6 +191,10 @@ if __name__ == "__main__":
         print("Usage: views <directory with page view data>")
         sys.exit()
 
+    # Configure logging
+    logging.basicConfig(format="%(asctime)s [%(levelname)s] %(funcName)s: %(message)s")
+    logging.getLogger().setLevel(logging.INFO)
+
     # Create page views database
     database = Views()
 
