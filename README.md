@@ -51,9 +51,9 @@ The following command shows how to start a txtchat persona.
 
 ```
 # Set to server URL, this is default when running local
-export URL=ws://localhost:3000/websocket
-export USERNAME=<Rocket Chat User>
-export PASSWORD=<Rocket Chat User Password>
+export AGENT_URL=ws://localhost:3000/websocket
+export AGENT_USERNAME=<Rocket Chat User>
+export AGENT_PASSWORD=<Rocket Chat User Password>
 
 # YAML is loaded from Hugging Face Hub, can also reference local path
 python -m txtchat.agent wikitalk.yml

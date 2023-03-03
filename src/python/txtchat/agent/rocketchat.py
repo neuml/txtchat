@@ -53,7 +53,7 @@ class RocketChat(Agent):
 
         # Create chat instance and connect
         self.chat = RocketChatClient()
-        await self.chat.start(*self.parameters())
+        await self.chat.start(*self.connection())
 
         # Subscribe to existing direct message channels
         for channel, category in await self.chat.get_channels():
@@ -125,14 +125,3 @@ class RocketChat(Agent):
         """
 
         asyncio.create_task(function)
-
-    def parameters(self):
-        """
-        Reads connection parameters. This method also supports parameters as environment variables.
-
-        Returns:
-            (url, username, password)
-        """
-
-        # Get parameters from config. If empty check environment variables
-        return [self.config.get(x, os.environ.get(x.upper())) for x in ["url", "username", "password"]]

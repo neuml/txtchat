@@ -3,6 +3,7 @@ Agent module
 """
 
 import logging
+import os
 import traceback
 
 from txtai.app import Application
@@ -61,6 +62,20 @@ class Agent:
             logger.error(traceback.format_exc())
 
         return response
+
+    def connection(self):
+        """
+        Reads agent connection parameters. This method also supports parameters as environment variables.
+
+        Returns:
+            (url, username, password)
+        """
+
+        # Get agent connection parameters
+        config = self.config.get("agent", {})
+
+        # Get parameters from config. If empty check environment variables
+        return [config.get(x, os.environ.get(f"AGENT_{x.upper()}")) for x in ["url", "username", "password"]]
 
     def start(self):
         """
