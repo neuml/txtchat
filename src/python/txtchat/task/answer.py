@@ -13,9 +13,21 @@ class Answer(TemplateTask):
     NOANSWER = "I don't have data on that"
 
     def defaulttemplate(self):
+        """
+        Default template. Used when template parameter is empty.
+
+        Returns:
+            default template
+        """
+
         return "{answer}\n\nReference: {reference}"
 
     def defaultrules(self):
-        return {
-            "answer": Answer.NOANSWER
-        }
+        """
+        Default rules. Used when rules parameter is empty.
+
+        Returns:
+            default rules
+        """
+
+        return {"answer": Answer.NOANSWER}

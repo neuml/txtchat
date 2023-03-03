@@ -29,10 +29,7 @@ class Wikisearch(Pipeline):
         """
 
         # Create query workflow
-        self.workflow = Workflow([
-            Question(action=application.pipelines["extractor"]),
-            WikiAnswer()
-        ])
+        self.workflow = Workflow([Question(action=application.pipelines["extractor"]), WikiAnswer()])
 
     def __call__(self, texts):
         """
@@ -105,6 +102,16 @@ class WikiAnswer(Answer):
     """
 
     def prepare(self, element):
+        """
+        Formats the reference column as a Wikipedia URL.
+
+        Args:
+            element: input data element
+
+        Returns:
+            transformed element
+        """
+
         if not element["answer"].startswith(Answer.NOANSWER):
             reference = element["reference"]
 

@@ -4,7 +4,6 @@ RocketChat module
 
 import asyncio
 import logging
-import os
 
 from rocketchat_async import RocketChat as RocketChatClient
 
