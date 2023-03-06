@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="logo.png"/>
+    <img src="https://raw.githubusercontent.com/neuml/txtchat/master/logo.png"/>
 </p>
 
 <h3 align="center">
