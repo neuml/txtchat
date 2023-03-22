@@ -44,6 +44,7 @@ Extending txtchat to additional platforms only needs a new Agent subclass for th
 A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic. The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows.
 
 - [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Conversational search with Wikipedia
+- [LLaMA](https://hf.co/neuml/txtchat-personas/blob/main/llama.yml): Talk with LLaMA models, [read more here](./examples/llama)
 - [Summary](https://hf.co/neuml/txtchat-personas/blob/main/summary.yml): Reads input URLs and summarizes the text
 - [Mr. French](https://hf.co/neuml/txtchat-personas/blob/main/mrfrench.yml): Translates input text into French
 
