@@ -1,12 +1,12 @@
 # Talk with LLaMA
 
-This example shows how a instruction-following LLaMa model can be loaded with txtchat. Run the following steps to get started.
+This example shows how an instruction-following LLaMA model can be loaded with txtchat. Run the following steps to get started.
 
 ![demo](https://raw.githubusercontent.com/neuml/txtchat/master/images/llama.png)
 
 ## Install
 
-Install the following required dependencies. As of March 2023, running LLaMa through Hugging Face Transformers requires the latest development release.
+Install the following required dependencies. As of March 2023, running LLaMA through Hugging Face Transformers requires the latest development release.
 
 ```
 pip install txtchat git+https://github.com/huggingface/transformers.git peft sentencepiece
@@ -33,6 +33,24 @@ python -m txtchat.agent llama.yml
 ```
 
 This workflow uses a base 7B parameter LLaMA model with a PEFT-LoRA fine-tuned model (Alpaca-LoRA). 
+
+# Modify configuration
+
+Running the steps above uses default configuration found in the [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository. This configuration can be modified and run locally. The default configuration is shown below.
+
+```yaml
+# LLaMA model inference with a txtai workflow
+workflow:
+  chat:
+    tasks:
+      - task: template
+        template: |-
+          Below is an instruction that describes a task. Write a response that appropriately completes the request.
+          ### Instruction:
+          {text}
+          ### Response:
+        action: llama.Llama
+```
 
 ## Further reading
 
