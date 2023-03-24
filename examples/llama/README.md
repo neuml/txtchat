@@ -20,25 +20,15 @@ This example also requires an instance of [Rocket.Chat](https://github.com/Rocke
 wget https://raw.githubusercontent.com/neuml/txtchat/master/examples/llama/llama.py
 ```
 
-## Start the persona
+# Create configuration
 
-```
-# Set to server URL, this is default when running local
-export AGENT_URL=ws://localhost:3000/websocket
-export AGENT_USERNAME=<Rocket Chat User>
-export AGENT_PASSWORD=<Rocket Chat User Password>
-
-# YAML is loaded from Hugging Face Hub, can also reference local path
-python -m txtchat.agent llama.yml
-```
-
-This workflow uses a base 7B parameter LLaMA model with a PEFT-LoRA fine-tuned model (Alpaca-LoRA). 
-
-# Modify configuration
-
-Running the steps above uses default configuration found in the [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository. This configuration can be modified and run locally. The default configuration is shown below.
+Create the following configuration in a file named `llama.yml`. Note that this repository only has code to run LLaMA models. You have to specify paths for the `base` and `lora` parameters. See the [Alpaca-LoRA project](https://github.com/tloen/alpaca-lora) for `base` and `lora` model weight options.
 
 ```yaml
+llama.Llama:
+  base: <path to base LLaMA weights>
+  lora: <path to LoRA adapter weights>
+
 # LLaMA model inference with a txtai workflow
 workflow:
   chat:
@@ -52,9 +42,21 @@ workflow:
         action: llama.Llama
 ```
 
+## Start the persona
+
+```
+# Set to server URL, this is default when running local
+export AGENT_URL=ws://localhost:3000/websocket
+export AGENT_USERNAME=<Rocket Chat User>
+export AGENT_PASSWORD=<Rocket Chat User Password>
+
+# YAML is loaded from Hugging Face Hub, can also reference local path
+python -m txtchat.agent llama.yml
+```
+
 ## Further reading
 
-The following great projects below have made this example possible. Read more on LLaMA and Alpaca at the links below.
+The following great projects below made this example possible. Read more on LLaMA and Alpaca at the links below.
 
 It's important to note that LLaMA models and derivatives are licensed under a *non-commercial license*.
 

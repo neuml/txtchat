@@ -17,7 +17,7 @@ class Llama(Pipeline):
     Runs a LLaMA model with a txtai pipeline.
     """
 
-    def __init__(self, base="decapoda-research/llama-7b-hf", lora="tloen/alpaca-lora-7b"):
+    def __init__(self, base, lora):
         """
         Creates a new LLaMA pipeline.
 
