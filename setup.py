@@ -22,7 +22,7 @@ setup(
     packages=find_packages(where="src/python"),
     package_dir={"": "src/python"},
     keywords="search embedding machine-learning nlp",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "datasets>=2.8.0",
         "nltk>=3.5",

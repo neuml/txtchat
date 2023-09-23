@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-    <p>Conversational search and workflows for all</p>
+    <p>Conversational search and workflows</p>
 </h3>
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ txtchat is a framework for building conversational search and workflows.
 
 A set of intelligent agents are available to integrate with messaging platforms. These agents or personas are associated with an automated account and respond to messages with AI-powered responses. Workflows can use large language models (LLMs), small models or both.
 
-txtchat is built with Python 3.7+ and [txtai](https://github.com/neuml/txtai).
+txtchat is built with Python 3.8+ and [txtai](https://github.com/neuml/txtai).
 
 ## Installation
 
@@ -26,7 +26,7 @@ You can also install txtchat directly from GitHub. Using a Python Virtual Enviro
 
     pip install git+https://github.com/neuml/txtchat
 
-Python 3.7+ is supported
+Python 3.8+ is supported
 
 See [this link](https://github.com/neuml/txtai#installation) to help resolve environment-specific install issues.
 
