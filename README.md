@@ -2,9 +2,9 @@
     <img src="https://raw.githubusercontent.com/neuml/txtchat/master/logo.png"/>
 </p>
 
-<h3 align="center">
-    <p>Conversational search and workflows</p>
-</h3>
+<p align="center">
+    <b>Conversational search and workflows</b>
+</p>
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
