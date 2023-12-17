@@ -6,7 +6,7 @@ import logging
 import urllib.parse
 
 from txtai.pipeline import Pipeline
-from txtai.workflow import Workflow
+from txtai.workflow import Task, Workflow
 
 from ..task import Question, Answer
 
@@ -28,19 +28,27 @@ class Wikisearch(Pipeline):
             application: application instance
         """
 
-        # Create query workflow
-        self.workflow = Workflow([Question(action=application.pipelines["extractor"]), WikiAnswer()])
+        # Application instance
+        self.application = application
 
-    def __call__(self, texts):
+        # Workflow instance
+        self.workflow = None
+
+    def __call__(self, texts, **kwargs):
         """
         Executes a conversational search action for each element in texts.
 
         Args:
             texts: input texts
+            kwargs: additional keyword args to pass to workflow
 
         Returns:
             responses
         """
+
+        # Defer creation of workflow to ensure application is fully initialized
+        if not self.workflow:
+            self.workflow = self.create(**kwargs)
 
         responses = []
         for text in texts:
@@ -54,6 +62,29 @@ class Wikisearch(Pipeline):
             responses.append(response)
 
         return responses
+
+    def create(self, **kwargs):
+        """
+        Creates a search workflow.
+
+        Args:
+            kwargs: keyword arguments to pass to workflow
+
+        Returns:
+            Workflow
+        """
+
+        # Get extractor instance
+        extractor = self.application.pipelines["extractor"]
+
+        def action(x):
+            return extractor(x, **kwargs)
+
+        # Flag to see if extractor has a template
+        template = hasattr(extractor, "template") and extractor.template != "{question} {context}"
+
+        # Define workflow
+        return Workflow([Task(action=action) if template else Question(action=action), WikiAnswer()])
 
     def query(self, text, low, high):
         """
