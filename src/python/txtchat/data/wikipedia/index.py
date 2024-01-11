@@ -2,18 +2,19 @@
 Index module
 """
 
+import argparse
 import logging
 import re
 import sqlite3
-import sys
 
 from multiprocessing import Process, Queue
 
-from datasets import load_dataset
 from nltk import sent_tokenize
 from tqdm import tqdm
 
 from txtai.embeddings import Embeddings
+
+from datasets import load_dataset
 
 # Process and index parameters
 COMPLETE, BATCH, ENCODEBATCH = 1, 8192, 128
@@ -24,16 +25,17 @@ class Reader:
     Loads the Wikipedia dataset along with the page view database and adds valid entries to the outputs queue.
     """
 
-    def __call__(self, outputs, pageviews):
+    def __call__(self, outputs, dataset, pageviews):
         """
         Adds valid Wikipedia articles to outputs.
 
         Args:
             outputs: outputs queue
+            dataset: path to dataset
             pageviews: path to page views database
         """
 
-        wiki = load_dataset("olm/olm-wikipedia-20221220", split="train")
+        wiki = load_dataset(dataset, split="train")
 
         # Get percentile rankings
         rank = self.rankings(pageviews)
@@ -155,17 +157,20 @@ class Index:
     Builds a Wikipedia embeddings index.
     """
 
-    def __call__(self):
+    def __call__(self, args):
         """
         Main process for streaming content and building an embeddings index. Another process is spawned that
         streams Wikipedia articles to load into the embeddings index.
+
+        Args:
+            args: command line arguments
         """
 
         # Encoding parameters
         queue = Queue(5)
 
         # Dataset reader process
-        process = Process(target=Reader(), args=(queue, sys.argv[2]))
+        process = Process(target=Reader(), args=(queue, args.dataset, args.pageviews))
         process.start()
 
         # Total size
@@ -191,7 +196,7 @@ class Index:
         process.join()
 
         # Save index
-        embeddings.save(sys.argv[1])
+        embeddings.save(args.output)
 
     def stream(self, queue):
         """
@@ -208,14 +213,16 @@ class Index:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: index <output dir> <path to page views database>")
-        sys.exit()
-
     # Configure logging
     logging.basicConfig(format="%(asctime)s [%(levelname)s] %(funcName)s: %(message)s")
     logging.getLogger().setLevel(logging.INFO)
 
+    # Command line parser
+    parser = argparse.ArgumentParser(description="Wikipedia Index")
+    parser.add_argument("-d", "--dataset", help="input dataset", metavar="DATASET", required=True)
+    parser.add_argument("-o", "--output", help="path to output directory", metavar="OUTPUT", required=True)
+    parser.add_argument("-v", "--pageviews", help="path to pageviews database", metavar="PAGEVIEWS", required=True)
+
     # Build index
     index = Index()
-    index()
+    index(parser.parse_args())

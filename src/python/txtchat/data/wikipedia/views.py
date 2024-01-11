@@ -2,12 +2,12 @@
 Views module
 """
 
+import argparse
+import bz2
 import glob
-import gzip
 import logging
 import os
 import sqlite3
-import sys
 
 from multiprocessing import Process, Queue
 
@@ -25,13 +25,14 @@ class Reader:
     a shared queue and writes back aggregated page view data.
     """
 
-    def __call__(self, inputs, outputs):
+    def __call__(self, inputs, outputs, prefix):
         """
         Reads files from inputs and writes aggregated page views to outputs.
 
         Args:
             inputs: input queue
             outputs: output queue
+            prefix: prefix filter used to accept entries
         """
 
         # Aggregated page views
@@ -40,7 +41,7 @@ class Reader:
         try:
             # Process until inputs queue is exhausted
             while not inputs.empty():
-                self.process(inputs.get(), pages)
+                self.process(inputs.get(), pages, prefix)
 
         finally:
             # Write aggregated page stats
@@ -49,25 +50,26 @@ class Reader:
             # Write message that process is complete
             outputs.put(COMPLETE)
 
-    def process(self, path, pages):
+    def process(self, path, pages, prefix):
         """
         Processes a single file at path. Writes page views to pages parameter.
 
         Args:
             path: input file path
             pages: page view dictionary
+            prefix: prefix filter used to accept entries
         """
 
         logger.info("Processing: %s", path)
-        with gzip.open(path, "rt", encoding="utf-8") as infile:
+        with bz2.open(path, "rt", encoding="utf-8") as infile:
             for line in infile:
-                if line.startswith("en "):
+                if not prefix or line.startswith(f"{prefix} "):
                     columns = line.split()
-                    title, views = columns[1].lower(), columns[2]
+                    title, views = columns[1].lower(), columns[-2]
 
                     # Check if title matches filters
                     if self.accept(title):
-                        pages[title] = int(views)
+                        pages[title] = pages.get(title, 0) + int(views)
 
     def accept(self, title):
         """
@@ -80,7 +82,7 @@ class Reader:
             True if entry should be accepted, False otherwise
         """
 
-        prefix = ["Category:", "File:", "Help:", "Main_Page", "Portal:", "Special:", "Talk:", "Template:", "Wikipedia:"]
+        prefix = ["Category:", "Draft:", "File:", "Help:", "Main_Page", "Portal:", "Special:", "Talk:", "Template:", "Wikipedia:"]
         names = ["Main_Page", "-"]
 
         return not any(x for x in prefix if title.startswith(x)) and title not in names
@@ -91,25 +93,28 @@ class Views:
     Builds a page views database.
     """
 
-    def __call__(self):
+    def __call__(self, args):
         """
         Main process for aggregating page view data. This lists a directory containing hourly page view files
         and puts each file into a queue shared by multiple processes.
 
         The reader processes parse the file contents and return page view data. This process then aggregates
         the page views by title and saves the results to a SQLite database.
+
+        Args:
+            args: command line arguments
         """
 
         # Create queues, limit size of output queue
         inputs, outputs = Queue(), Queue()
 
         # Scan input directory and add files to inputs queue
-        total = self.scan(os.path.join(sys.argv[1], "data/pageviews*gz"), inputs)
+        total = self.scan(os.path.join(args.views, "data/pageviews*bz2"), inputs)
 
         # Start worker processes
         processes = []
         for _ in range(min(total, os.cpu_count())):
-            process = Process(target=Reader(), args=(inputs, outputs))
+            process = Process(target=Reader(), args=(inputs, outputs, args.prefix))
             process.start()
             processes.append(process)
 
@@ -123,7 +128,7 @@ class Views:
         df = pd.DataFrame(pages.items(), columns=["title", "views"])
 
         # Path to database file
-        path = os.path.join(sys.argv[1], "pageviews.sqlite")
+        path = os.path.join(args.views, "pageviews.sqlite")
 
         # Remove existing file, if necessary
         if os.path.exists(path):
@@ -187,16 +192,17 @@ class Views:
 
 # Call main method
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: views <directory with page view data>")
-        sys.exit()
-
     # Configure logging
     logging.basicConfig(format="%(asctime)s [%(levelname)s] %(funcName)s: %(message)s")
     logging.getLogger().setLevel(logging.INFO)
+
+    # Command line parser
+    parser = argparse.ArgumentParser(description="Wikipedia Page Views")
+    parser.add_argument("-p", "--prefix", help="prefix filter used to accept entries", metavar="PREFIX", default="en.wikipedia")
+    parser.add_argument("-v", "--views", help="pageviews root directory", metavar="PAGEVIEWS", required=True)
 
     # Create page views database
     database = Views()
 
     # Build aggregated page view database
-    database()
+    database(parser.parse_args())
