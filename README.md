@@ -3,16 +3,18 @@
 </p>
 
 <p align="center">
-    <b>Conversational search and workflows</b>
+    <b>Retrieval Augmented Generation (RAG) powered search</b>
 </p>
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-txtchat is a framework for building conversational search and workflows.
+txtchat builds retrieval augmented generation (RAG) and language model powered search applications.
 
 ![demo](https://raw.githubusercontent.com/neuml/txtchat/master/demo.gif)
 
-A set of intelligent agents are available to integrate with messaging platforms. These agents or personas are associated with an automated account and respond to messages with AI-powered responses. Workflows can use large language models (LLMs), small models or both.
+The advent of large language models (LLMs) has pushed a reimagination of search. LLM-powered search can do more. Instead of just bringing back results, search can now extract, summarize, translate and transform content into answers.
+
+txtchat adds a set of intelligent agents that are available to integrate with messaging platforms. These agents or personas are associated with an automated account and respond to messages with AI-powered responses. Workflows can use large language models (LLMs), small models or both.
 
 txtchat is built with Python 3.8+ and [txtai](https://github.com/neuml/txtai).
 
@@ -43,7 +45,7 @@ Extending txtchat to additional platforms only needs a new Agent subclass for th
 
 A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic. The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows.
 
-- [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Conversational search with Wikipedia
+- [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Chat with Wikipedia
 - [Summary](https://hf.co/neuml/txtchat-personas/blob/main/summary.yml): Reads input URLs and summarizes the text
 - [Mr. French](https://hf.co/neuml/txtchat-personas/blob/main/mrfrench.yml): Translates input text into French
 
@@ -65,7 +67,7 @@ Want to add a new persona? Simply create a txtai workflow and save it to a YAML 
 
 ## Examples
 
-The following is a [list of YouTube videos](https://www.youtube.com/watch?v=ROyess8dLoA&list=PLaqn_lxC5d0C_HPe53GPk7jBH3xhBcgu-) that shows how txtchat works. These videos run a series of queries with the Wikitalk persona. Wikitalk is a combination of a Wikipedia embeddings index and a LLM prompt to answer questions.
+The following is a [list of YouTube videos](https://www.youtube.com/watch?v=ROyess8dLoA&list=PLaqn_lxC5d0C_HPe53GPk7jBH3xhBcgu-) that shows how txtchat works. These videos run a series of queries with the Wikitalk persona. Wikitalk is a combination of a [Wikipedia embeddings index](https://huggingface.co/NeuML/txtai-wikipedia) and a LLM prompt to answer questions.
 
 Every answer shows an associated reference with where the data came from. Wikitalk will say "I don't have data on that" when it doesn't have an answer.
 
@@ -196,4 +198,4 @@ workflow:
 
 ## Further Reading
 
-- [Introducing txtchat, next-generation conversational search and workflows for all](https://medium.com/neuml/introducing-txtchat-next-generation-conversational-search-and-workflows-for-all-97557009fb53)
+- [Introducing txtchat — Retrieval Augmented Generation (RAG) powered search](https://medium.com/neuml/introducing-txtchat-next-generation-conversational-search-and-workflows-for-all-97557009fb53)
