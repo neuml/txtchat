@@ -9,7 +9,7 @@ setup(
     name="txtchat",
     version="0.2.0",
     author="NeuML",
-    description="Conversational search and workflows for all",
+    description="Retrieval augmented generation (RAG) and language model powered search applications",
     long_description=DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/neuml/txtchat",
