@@ -111,7 +111,7 @@ Like the summary persona, Mr. French is a simple persona that translates input t
 
 Want to connect txtchat to your own data? All that you need to do is create a txtai workflow. Let's run through an example of building a Hacker News indexing workflow and a txtchat persona.
 
-First, we'll define the indexing workflow and build the index. This is done with a workflow for convenience. Alternatively it could be a Python program that builds an embeddings index from your dataset. There are over [40 example notebooks](https://github.com/neuml/txtai#examples) covering a wide range of ways to get data into txtai. There are also example workflows that can be downloaded from in this [Hugging Face Space](https://huggingface.co/spaces/NeuML/txtai).
+First, we'll define the indexing workflow and build the index. This is done with a workflow for convenience. Alternatively it could be a Python program that builds an embeddings index from your dataset. There are over [50 example notebooks](https://neuml.github.io/txtai/examples/) covering a wide range of ways to get data into txtai. There are also example workflows that can be downloaded from in this [Hugging Face Space](https://huggingface.co/spaces/NeuML/txtai).
 
 ```yaml
 path: /tmp/hn
