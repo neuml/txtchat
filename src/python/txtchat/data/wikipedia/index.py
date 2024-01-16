@@ -7,38 +7,33 @@ import logging
 import re
 import sqlite3
 
-from multiprocessing import Process, Queue
-
 from nltk import sent_tokenize
-from tqdm import tqdm
-
-from txtai.embeddings import Embeddings
-
 from datasets import load_dataset
 
-# Process and index parameters
-COMPLETE, BATCH, ENCODEBATCH = 1, 8192, 128
+from ..base import Index as IndexBase
+from ..base import Reader as ReaderBase
+from ..base import COMPLETE, BATCH, ENCODEBATCH
 
 
-class Reader:
+class Reader(ReaderBase):
     """
     Loads the Wikipedia dataset along with the page view database and adds valid entries to the outputs queue.
     """
 
-    def __call__(self, outputs, dataset, pageviews):
+    def __call__(self, outputs, args):
         """
         Adds valid Wikipedia articles to outputs.
 
         Args:
             outputs: outputs queue
-            dataset: path to dataset
-            pageviews: path to page views database
+            args: command line args
         """
 
-        wiki = load_dataset(dataset, split="train")
+        # Load the raw dataset
+        wiki = load_dataset(args.dataset, split="train")
 
         # Get percentile rankings
-        rank = self.rankings(pageviews)
+        rank = self.rankings(args.pageviews)
 
         # Put estimated data size
         outputs.put(len(wiki) * 2)
@@ -79,10 +74,10 @@ class Reader:
                     score = self.percentile(rank, title)
 
                     # Index article text
-                    batch = self.add(batch, (title, abstract, None), outputs)
+                    batch = self.add(batch, (title, abstract), outputs)
 
                     # Index additional metadata
-                    batch = self.add(batch, (title, {"percentile": score}, None), outputs)
+                    batch = self.add(batch, (title, {"percentile": score}), outputs)
 
         # Final batch
         if batch:
@@ -130,86 +125,33 @@ class Reader:
 
         return rank.get(title.lower().replace(" ", "_"), 0)
 
-    def add(self, batch, row, outputs):
-        """
-        Adds an output row to batch. If BATCH size has been met, a new batch is put in outputs.
 
-        Args:
-            batch: current batch
-            row: row to add
-            outputs: output queue
-
-        Returns:
-            current batch, which will change when BATCH size has been reached
-        """
-
-        batch.append(row)
-
-        if len(batch) % BATCH == 0:
-            outputs.put(batch)
-            batch = []
-
-        return batch
-
-
-class Index:
+class Index(IndexBase):
     """
     Builds a Wikipedia embeddings index.
     """
 
-    def __call__(self, args):
+    def __init__(self):
         """
-        Main process for streaming content and building an embeddings index. Another process is spawned that
-        streams Wikipedia articles to load into the embeddings index.
-
-        Args:
-            args: command line arguments
+        Sets the embeddings configuration.
         """
 
-        # Encoding parameters
-        queue = Queue(5)
+        # Call parent constructor
+        super().__init__()
 
-        # Dataset reader process
-        process = Process(target=Reader(), args=(queue, args.dataset, args.pageviews))
-        process.start()
+        # Create configuration
+        self.config = {
+            "format": "json",
+            "path": "intfloat/e5-base",
+            "instructions": {"query": "query: ", "data": "passage: "},
+            "batch": BATCH,
+            "encodebatch": ENCODEBATCH,
+            "faiss": {"quantize": True, "sample": 0.05},
+            "content": True,
+        }
 
-        # Total size
-        total = queue.get()
-
-        # Embedding index parameters
-        embeddings = Embeddings(
-            {
-                "format": "json",
-                "path": "intfloat/e5-base",
-                "instructions": {"query": "query: ", "data": "passage: "},
-                "batch": BATCH,
-                "encodebatch": ENCODEBATCH,
-                "faiss": {"quantize": True, "sample": 0.05},
-                "content": True,
-            }
-        )
-
-        # Index stream
-        embeddings.index(tqdm(self.stream(queue), total=total))
-
-        # Wait for process to finish
-        process.join()
-
-        # Save index
-        embeddings.save(args.output)
-
-    def stream(self, queue):
-        """
-        Yields articles for indexing from the queue.
-
-        Args:
-            queue: queue to read from
-        """
-
-        result = queue.get()
-        while result != COMPLETE:
-            yield from result
-            result = queue.get()
+        # Create Reader instance
+        self.reader = Reader()
 
 
 if __name__ == "__main__":
