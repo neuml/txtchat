@@ -15,12 +15,12 @@ from ..base import COMPLETE, BATCH, ENCODEBATCH
 
 class Reader(ReaderBase):
     """
-    Loads the arXiv dataset and adds valid entries to the outputs queue.
+    Loads the arXiv dataset and adds entries to the outputs queue.
     """
 
     def __call__(self, outputs, args):
         """
-        Adds valid arXiv articles to outputs.
+        Adds arXiv articles to outputs.
 
         Args:
             outputs: outputs queue
