@@ -55,7 +55,7 @@ class Index:
     def __call__(self, args):
         """
         Main process for streaming content and building an embeddings index. Another process is spawned that
-        streams arXiv articles to load into the embeddings index.
+        streams articles to load into the embeddings index.
 
         Args:
             args: command line arguments
