@@ -22,16 +22,8 @@ setup(
     packages=find_packages(where="src/python"),
     package_dir={"": "src/python"},
     keywords="search embedding machine-learning nlp",
-    python_requires=">=3.8",
-    install_requires=[
-        "datasets>=2.8.0",
-        "nltk>=3.5",
-        "pandas>=1.3.5",
-        "pyyaml>=5.3",
-        "rocketchat_async>=1.0.1",
-        "tqdm>=4.48.0",
-        "txtai>=5.4.0",
-    ],
+    python_requires=">=3.9",
+    install_requires=["huggingface-hub>=0.19.0", "pyyaml>=5.3", "rocketchat_async>=1.0.1", "txtai>=5.4.0"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
