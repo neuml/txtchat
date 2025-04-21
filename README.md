@@ -16,7 +16,7 @@ The advent of large language models (LLMs) has pushed a reimagination of search.
 
 txtchat adds a set of intelligent agents that are available to integrate with messaging platforms. These agents or personas are associated with an automated account and respond to messages with AI-powered responses. Workflows can use large language models (LLMs), small models or both.
 
-txtchat is built with Python 3.8+ and [txtai](https://github.com/neuml/txtai).
+txtchat is built with Python 3.10+ and [txtai](https://github.com/neuml/txtai).
 
 ## Installation
 
@@ -28,7 +28,7 @@ You can also install txtchat directly from GitHub. Using a Python Virtual Enviro
 
     pip install git+https://github.com/neuml/txtchat
 
-Python 3.8+ is supported
+Python 3.10+ is supported
 
 See [this link](https://github.com/neuml/txtai#installation) to help resolve environment-specific install issues.
 
