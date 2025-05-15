@@ -9,7 +9,7 @@ setup(
     name="txtchat",
     version="0.3.0",
     author="NeuML",
-    description="Retrieval augmented generation (RAG) and language model powered search applications",
+    description="Build autonomous agents, retrieval augmented generation (RAG) processes and language model powered chat applications ",
     long_description=DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/neuml/txtchat",
@@ -23,7 +23,7 @@ setup(
     package_dir={"": "src/python"},
     keywords="search embedding machine-learning nlp",
     python_requires=">=3.10",
-    install_requires=["huggingface-hub>=0.19.0", "pyyaml>=5.3", "rocketchat_async>=1.0.1", "txtai>=8.5.0"],
+    install_requires=["huggingface-hub>=0.19.0", "pyyaml>=5.3", "rocketchat_async>=4.2.0", "txtai>=8.5.0"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",

@@ -6,9 +6,6 @@ import logging
 import urllib.parse
 
 from txtai.pipeline import Pipeline
-from txtai.workflow import Task, Workflow
-
-from ..task import Question, Answer
 
 # Logging configuration
 logger = logging.getLogger(__name__)
@@ -16,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 class Wikisearch(Pipeline):
     """
-    Pipeline for conversational search with Wikipedia. This pipeline queries a Wikipedia embeddings index and passes the results
-    as context to a large language model (LLM) prompt. Results from the prompt inference are then returned.
+    Pipeline for multi-step RAG with Wikipedia. This pipeline queries a Wikipedia embeddings index and passes the results
+    as context to a Large Language Model (LLM) prompt.
     """
 
     def __init__(self, application):
@@ -31,64 +28,35 @@ class Wikisearch(Pipeline):
         # Application instance
         self.application = application
 
-        # Workflow instance
-        self.workflow = None
-
     def __call__(self, texts, **kwargs):
         """
-        Executes a conversational search action for each element in texts.
+        Executes a multi-step RAG action for each element in texts.
 
         Args:
             texts: input texts
-            kwargs: additional keyword args to pass to workflow
+            kwargs: additional keyword args
 
         Returns:
             responses
         """
 
-        # Defer creation of workflow to ensure application is fully initialized
-        if not self.workflow:
-            self.workflow = self.create(**kwargs)
-
         responses = []
         for text in texts:
             # First try top 1%
-            response = self.query(text, 0.99, 1.0)
+            response = self.rag(text, 0.99, 1.0)
 
             # Do full query if no answer
-            if response.startswith(Answer.NOANSWER):
-                response = self.query(text, 0.00, 0.99)
+            if not response:
+                response = self.rag(text, 0.00, 0.99)
 
-            responses.append(response)
+            # Format responses
+            responses.append(self.render(response))
 
         return responses
 
-    def create(self, **kwargs):
+    def rag(self, text, low, high):
         """
-        Creates a search workflow.
-
-        Args:
-            kwargs: keyword arguments to pass to workflow
-
-        Returns:
-            Workflow
-        """
-
-        # Get extractor instance
-        extractor = self.application.pipelines["extractor"]
-
-        def action(x):
-            return extractor(x, **kwargs)
-
-        # Flag to see if extractor has a template
-        template = hasattr(extractor, "template") and extractor.template != "{question} {context}"
-
-        # Define workflow
-        return Workflow([Task(action=action) if template else Question(action=action), WikiAnswer()])
-
-    def query(self, text, low, high):
-        """
-        Runs a prompt-driven query for text. Low and high percentile bounds are used to filter results from the Wikipedia index.
+        Runs a RAG pipeline. Low and high percentile bounds are used to filter results from the Wikipedia index.
 
         Args:
             text: input query text
@@ -99,15 +67,26 @@ class Wikisearch(Pipeline):
             response
         """
 
+        # Get rag pipeline
+        rag = self.application.pipelines["rag"]
+
         # Build similar clause
         clause = self.clause(text)
 
         # Build SQL query
-        query = f"SELECT id, text, score, percentile FROM txtai WHERE similar({clause}) AND percentile >= {low} AND percentile <= {high} limit 3"
+        query = f"SELECT id, text, score, percentile FROM txtai WHERE similar({clause}) AND percentile >= {low} AND percentile <= {high} limit 10"
         logger.info(query)
 
-        # Run query workflow
-        return list(self.workflow([{"query": query, "question": text}]))[0]
+        # Generate context
+        context = self.application.search(query)
+
+        # Run RAG pipeline
+        response = rag(text, [x["text"] for x in context], maxlength=2048)
+
+        # Format and return response
+        reference = response["reference"]
+        response["reference"] = context[reference]["id"] if reference is not None else reference
+        return response
 
     def clause(self, text):
         """
@@ -126,31 +105,21 @@ class Wikisearch(Pipeline):
         # Wrap clause in single quotes
         return f"'{text}'"
 
-
-class WikiAnswer(Answer):
-    """
-    Task that fully resolves Wikipedia URLs.
-    """
-
-    def prepare(self, element):
+    def render(self, response):
         """
-        Formats the reference column as a Wikipedia URL.
+        Renders a response to text.
 
         Args:
-            element: input data element
-
-        Returns:
-            transformed element
+            response: pipeline response
         """
 
-        if not element["answer"].startswith(Answer.NOANSWER):
-            reference = element["reference"]
+        # Get answer and reference
+        answer = response["answer"]
+        reference = response["reference"]
 
-            # Resolve full reference URL path
-            path = urllib.parse.quote(reference.replace(" ", "_"))
-            element["reference"] = f"https://en.wikipedia.org/wiki/{path}"
+        # Resolve full reference URL path
+        path = urllib.parse.quote(reference.replace(" ", "_"))
+        reference = f"https://en.wikipedia.org/wiki/{path}"
 
-            # Call parent method
-            return super().prepare(element)
-
-        return element["answer"]
+        # Render response
+        return f"{answer}\n\nReference: {reference}"

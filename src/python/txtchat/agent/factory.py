@@ -12,7 +12,7 @@ from .rocketchat import RocketChat
 
 class AgentFactory:
     """
-    Methods to create agents.
+    Methods to create txtchat agents.
     """
 
     @staticmethod

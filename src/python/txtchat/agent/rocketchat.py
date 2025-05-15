@@ -6,6 +6,7 @@ import asyncio
 import logging
 
 from rocketchat_async import RocketChat as RocketChatClient
+from websockets.exceptions import ConnectionClosedOK
 
 from .base import Agent
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class RocketChat(Agent):
     """
-    Intelligent agent for RocketChat, an open-source communications platform.
+    Agent for RocketChat, an open-source communications platform.
     """
 
     def __init__(self, config):
@@ -38,6 +39,9 @@ class RocketChat(Agent):
         # Message ids this instance has responded to
         self.messages = set()
 
+        # Queue for errored messages
+        self.queue = None
+
     def start(self):
         """
         Run the agent as an async io function.
@@ -50,24 +54,34 @@ class RocketChat(Agent):
         Connects to RocketChat and subscribes to all direct message channels with the agent's username.
         """
 
-        # Create chat instance and connect
-        self.chat = RocketChatClient()
-        await self.chat.start(*self.connection())
+        while True:
+            # Create chat instance and connect
+            self.chat = RocketChatClient()
+            await self.chat.start(*self.connection())
 
-        # Subscribe to existing direct message channels
-        for channel, category in await self.chat.get_channels():
-            if category == "d":
-                logger.info("Listening on %s", (channel, category))
-                await self.chat.subscribe_to_channel_messages(channel, self.message)
-                self.subscriptions.add(channel)
+            # Subscribe to existing direct message channels
+            for channel, category in await self.chat.get_channels():
+                if category == "d":
+                    logger.info("Listening on %s", (channel, category))
+                    await self.chat.subscribe_to_channel_messages(channel, self.message)
+                    self.subscriptions.add(channel)
 
-        # Add callback to subscribe to new direct message channels
-        await self.chat.subscribe_to_channel_changes(self.subscribe)
+            # Add callback to subscribe to new direct message channels
+            await self.chat.subscribe_to_channel_changes(self.subscribe)
 
-        # Event loop
-        await self.chat.run_forever()
+            # Send queued messages
+            if self.queue:
+                await self.chat.send_message(*self.queue)
+                self.queue = None
 
-    def message(self, channel, sender, uid, thread, text, qualifier):
+            # Event loop
+            try:
+                await self.chat.run_forever()
+            except RocketChatClient.ConnectionClosed:
+                logger.info("Closed connection detected, reconnecting....")
+
+    # pylint: disable=W0613,R0917
+    def message(self, channel, sender, uid, thread, text, qualifier, unread, repeated):
         """
         Runs text through a txtai workflow and sends the response.
 
@@ -90,14 +104,11 @@ class RocketChat(Agent):
         if sender != self.chat.user_id and uid not in self.messages and not qualifier:
             logger.info("Processing message: %s", (channel, sender, uid, thread, text, qualifier))
 
-            # Send message text through workflow and get response
-            response = self.process(text)
-
             # Mark this input message as processed
             self.messages.add(uid)
 
-            # Send response
-            self.asyncrun(self.chat.send_message(response, channel))
+            # Process message asynchronously
+            asyncio.create_task(self.process(channel, text))
 
     def subscribe(self, channel, category):
         """
@@ -110,17 +121,29 @@ class RocketChat(Agent):
 
         if channel not in self.subscriptions and category == "d":
             logger.info("Adding channel %s", (channel, category))
-            self.asyncrun(self.chat.subscribe_to_channel_messages(channel, self.message))
+            asyncio.create_task(self.chat.subscribe_to_channel_messages(channel, self.message))
 
             # Save channel subscription
             self.subscriptions.add(channel)
 
-    def asyncrun(self, function):
+    async def process(self, channel, text):
         """
-        Runs function through an async task.
+        Processes an incoming message and sends a response.
 
         Args:
-            function: function to run
+            channel: channel id
+            text: message text
         """
 
-        asyncio.create_task(function)
+        # Send typing event
+        await self.chat.send_typing_event(channel)
+
+        # Execute agent action
+        response = self.execute(text)
+
+        try:
+            # Send message
+            await self.chat.send_message(response, channel)
+        except ConnectionClosedOK:
+            # Queue message response
+            self.queue = response, channel
