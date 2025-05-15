@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="txtchat",
-    version="0.3.0",
+    version="0.4.0",
     author="NeuML",
     description="Build autonomous agents, retrieval augmented generation (RAG) processes and language model powered chat applications ",
     long_description=DESCRIPTION,
