@@ -3,12 +3,12 @@
 </p>
 
 <p align="center">
-    <b>Retrieval Augmented Generation (RAG) powered search</b>
+    <b>Autonomous agents - RAG - language model powered chat</b>
 </p>
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-txtchat builds retrieval augmented generation (RAG) and language model powered search applications.
+txtchat builds autonomous agents, retrieval augmented generation (RAG) processes and language model powered chat applications.
 
 ![demo](https://raw.githubusercontent.com/neuml/txtchat/master/demo.gif)
 
@@ -34,7 +34,7 @@ See [this link](https://github.com/neuml/txtai#installation) to help resolve env
 
 ## Messaging platforms
 
-txtchat is designed to and will support a number of messaging platforms. Currently, [Rocket.Chat](https://github.com/RocketChat/Rocket.Chat) is the only supported platform given it's ability to be installed in a local environment along with being MIT-licensed. The easiest way to start a local Rocket.Chat instance is with Docker Compose. See these [instructions](https://docs.rocket.chat/deploy/prepare-for-your-deployment/rapid-deployment-methods/docker-and-docker-compose) for more.
+txtchat is designed to support a number of messaging platforms. Currently, [Rocket.Chat](https://github.com/RocketChat/Rocket.Chat) is the only supported platform given it's ability to be installed in a local environment along with being MIT-licensed. The easiest way to start a local Rocket.Chat instance is with Docker Compose. See these [instructions](https://docs.rocket.chat/v1/docs/deploy-with-docker-docker-compose#step-1-install-docker-and-docker-compose) for more.
 
 Extending txtchat to additional platforms only needs a new Agent subclass for that platform.
 
@@ -45,11 +45,10 @@ Extending txtchat to additional platforms only needs a new Agent subclass for th
 
 A persona is a combination of a chat agent and workflow that determines the type of responses. Each agent is tied to an account in the messaging platform. Persona workflows are messaging-platform agnostic. The [txtchat-persona](https://hf.co/neuml/txtchat-personas) repository has a list of standard persona workflows.
 
-- [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Chat with Wikipedia
+- [Agent](https://hf.co/neuml/txtchat-personas/blob/main/agent.yml): Agentic researcher with access to Wikipedia and web
+- [Wikitalk](https://hf.co/neuml/txtchat-personas/blob/main/wikitalk.yml): Retrieval Augmented Generation (RAG) with Wikipedia
 - [Summary](https://hf.co/neuml/txtchat-personas/blob/main/summary.yml): Reads input URLs and summarizes the text
 - [Mr. French](https://hf.co/neuml/txtchat-personas/blob/main/mrfrench.yml): Translates input text into French
-
-See the [examples](./examples) directory for additional persona and workflow configurations.
 
 The following command shows how to start a txtchat persona.
 
@@ -155,15 +154,21 @@ Now we'll define the chat workflow and run it as an agent.
 path: /tmp/hn
 writable: false
 
-extractor:
-  path: google/flan-t5-xl
+rag:
+  path: Qwen/Qwen3-14B-AWQ
   output: flatten
+  system: You are a friendly assistant. You answer questions from users.
+  template: |
+    Answer the following question using only the context below. Only include information
+    specifically discussed.
+
+    question: {question}
+    context: {context}
 
 workflow:
   search:
     tasks:
-      - task: txtchat.task.Question
-        action: extractor
+      - rag
 ```
 
 ```
@@ -182,16 +187,23 @@ Getting answers is nice but being able to have answers with where they came from
 path: /tmp/hn
 writable: false
 
-extractor:
-  path: google/flan-t5-xl
+rag:
+  path: Qwen/Qwen3-14B-AWQ
   output: reference
+  system: You are a friendly assistant. You answer questions from users.
+  template: |
+    Answer the following question using only the context below. Only include information
+    specifically discussed.
+
+    question: {question}
+    context: {context}
 
 workflow:
   search:
     tasks:
-      - task: txtchat.task.Question
-        action: extractor
-      - task: txtchat.task.Answer
+      - rag
+      - task: template
+        template: "{answer}\nReference: {reference}"
 ```
 
 ![hn-reference](https://raw.githubusercontent.com/neuml/txtchat/master/images/custom-reference.png)
