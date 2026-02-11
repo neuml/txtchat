@@ -23,7 +23,7 @@ setup(
     package_dir={"": "src/python"},
     keywords="search embedding machine-learning nlp",
     python_requires=">=3.10",
-    install_requires=["huggingface-hub>=0.19.0", "pyyaml>=5.3", "rocketchat_async>=4.2.0", "txtai>=8.5.0"],
+    install_requires=["httpx>=0.28.1", "huggingface-hub>=0.34.0", "pyyaml>=5.3", "txtai[agent]>=9.5.0", "websockets>=16.0"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
