@@ -4,10 +4,14 @@ Agent module
 
 import logging
 import os
-import re
 import traceback
 
-from txtai.app import Application
+import huggingface_hub
+import yaml
+
+from txtai import Application
+
+from ..chat import ChatFactory
 
 # Logging configuration
 logger = logging.getLogger(__name__)
@@ -19,19 +23,19 @@ class Agent:
     the type of generated AI-powered responses to user messages.
     """
 
-    def __init__(self, config):
+    def __init__(self, path):
         """
         Create a new agent.
 
         Args:
-            config: configuration
+            path: path to configuration file
         """
 
-        # Agent configuration
-        self.config = config
+        # Load configuration
+        self.config = self.load(path)
 
         # Create a txtai application instance
-        self.application = Application(config)
+        self.application = Application(self.config)
 
         # Get action, if available
         action = self.config.get("action")
@@ -52,20 +56,26 @@ class Agent:
         else:
             self.action, self.task = list(self.application.agents.keys())[0], "agent"
 
+        # Load chat provider
+        self.chat = ChatFactory.create(self.connection(), self.execute)
+
     def __call__(self):
         """
         Run this agent.
         """
 
         logger.info("Starting agent")
-        self.start()
 
-    def execute(self, text):
+        # Run chat loop
+        self.chat.run()
+
+    def execute(self, text, **kwargs):
         """
         Executes an Agent task with message text as input.
 
         Args:
             text: input text
+            kwargs: additional keyword arguments
 
         Returns:
             message response
@@ -79,10 +89,7 @@ class Agent:
                 response = list(self.application.workflow(self.action, [text]))[0]
             else:
                 # Execute agent for input message text
-                response = self.application.agent(self.action, text, self.config.get("maxlength", 8192))
-
-            # Remove thinking tags
-            response = re.sub(r"<think>.*?</think>\n?", "", response, flags=re.DOTALL).strip()
+                response = self.application.agent(self.action, text, self.config.get("maxlength", 8192), **kwargs)
 
         except Exception:
             response = "I had an error processing this request"
@@ -95,18 +102,36 @@ class Agent:
         Reads agent connection parameters. This method also supports parameters as environment variables.
 
         Returns:
-            (url, username, password)
+            connection parameters
         """
 
         # Get agent connection parameters
         config = self.config.get("connection", {})
 
         # Get parameters from config. If empty check environment variables
-        return [config.get(x, os.environ.get(f"AGENT_{x.upper()}")) for x in ["url", "username", "password"]]
+        return {x: config.get(x, os.environ.get(f"AGENT_{x.upper()}")) for x in ["url", "username", "password", "token", "provider"]}
 
-    def start(self):
+    def load(self, path):
         """
-        Method that initiates and registers an agent with a messaging platform.
+        Loads configuration from path. If path doesn't exist, check with project on HF Hub.
+
+        Args:
+            path: path to configuration
+
+        Returns:
+            configuration
         """
 
-        raise NotImplementedError
+        # Check Hugging Face Hub for configuration
+        if not os.path.exists(path):
+            path = huggingface_hub.hf_hub_download(
+                repo_id="neuml/txtchat-personas",
+                filename=os.path.basename(path),
+            )
+
+        # Read yaml from file
+        with open(path, "r", encoding="utf-8") as f:
+            # Read configuration
+            config = yaml.safe_load(f)
+
+        return config

@@ -5,7 +5,7 @@ Main agent execution method
 import logging
 import sys
 
-from .factory import AgentFactory
+from .base import Agent
 
 
 if __name__ == "__main__":
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
 
     # Load agent
-    agent = AgentFactory.create(sys.argv[1])
+    agent = Agent(sys.argv[1])
 
     # Run agent
     agent()
