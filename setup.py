@@ -9,7 +9,7 @@ setup(
     name="txtchat",
     version="0.5.0",
     author="NeuML",
-    description="Build autonomous agents, retrieval augmented generation (RAG) processes and language model powered chat applications ",
+    description="Local chat assistants with AI superpowers",
     long_description=DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/neuml/txtchat",
